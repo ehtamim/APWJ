@@ -28,7 +28,7 @@ public class UserController {
     public String userGender;
     public int userAge;
     public boolean userFreedomFighter,userDisabled;
-    public double hr=0,ma=0,con=0,fb=0,mp=0,fp=0,dp=0,ffp=0,n1=0,n3=0,n4=0,n5=0,re=0,govtTaxableInc=0;
+    public double hr=0,ma=0,con=0,fb=0,mp=0,fp=0,dp=0,ffp=0,n1=0,n3=0,n4=0,n5=0,re=0,gv=0;
     public User user;
     double taxableInc=0;double taxLiability=0;double totalRebate=0;double netTax=0;double totalInc=0;
 
@@ -58,7 +58,7 @@ public class UserController {
         return "ViewEntries";
     }
     @RequestMapping("/calculateTax")
-    public String calculateTax()
+    public String calculateTax(Model model)
     {
         getTaxVar();
         return "CalculateTax";
@@ -81,16 +81,6 @@ public class UserController {
         taxCalculate.setDate(LocalDate.now());
         taxCalculateService.insert(taxCalculate);
         return "redirect:/user/dashboard";
-        /*if (bindingResult.hasErrors()) {
-            return "CalculateTax";
-        }
-        else
-        {
-            taxCalculate.setUser_id(userID);
-            taxCalculate.setDate(LocalDate.now());
-            taxCalculateService.insert(taxCalculate);
-            return "/UserDashboard";
-        }*/
     }
 
     public void getTaxVar()
@@ -109,21 +99,25 @@ public class UserController {
         n4=taxVariables.getNext4();
         n5=taxVariables.getNext5();
         re=taxVariables.getRest();
+        getGv();
+    }
+    public void getGv()
+    {
         if(userGender=="Male" && userAge<65)
         {
-            govtTaxableInc=mp;
+            this.gv=mp;
         }
-        if (userGender=="Female" || userAge>=65)
+        if(userGender=="Female" || userAge>=65)
         {
-            govtTaxableInc=fp;
-        }
-        if (userFreedomFighter)
-        {
-            govtTaxableInc=ffp;
+            gv=fp;
         }
         if(userDisabled)
         {
-            govtTaxableInc=dp;
+            this.gv=dp;
+        }
+        if(userFreedomFighter)
+        {
+            this.gv=ffp;
         }
     }
 
@@ -136,7 +130,6 @@ public class UserController {
         double taxableMA=0;
         double taxableFB=0;
         totalInc=basicSalary+houseRent+medicalAllowance+festivalBonus+conveyance;
-        //double taxableInc=0;
         double rebateAble=0;
         if (govHouseRent>halfBasicSal)
         {
@@ -166,9 +159,9 @@ public class UserController {
         taxableFB=festivalBonus;
         taxableInc=basicSalary+taxableCon+taxableFB+taxableHR+taxableMA;
         double remainingTaxableInc=0;
-        if (taxableInc>govtTaxableInc)
+        if (taxableInc>gv)
         {
-            remainingTaxableInc=taxableInc-govtTaxableInc;
+            remainingTaxableInc=taxableInc-gv;
             if (remainingTaxableInc>100000)
             {
                 taxLiability=taxLiability+(100000*n1);
